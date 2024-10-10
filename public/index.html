@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exercise Tracker</title>
+    <style>
+        * {
+          box-sizing: border-box;
+        }
+
+        body {
+          font-family: sans-serif;
+          margin: 25px;
+          color: #222;
+          background-color: #f5f5f5;
+        }
+
+        h1 {
+          font-weight: bold;
+        }
+
+        p {
+          max-width: 900px;
+        }
+
+        form {
+          margin-bottom: 25px;
+          padding: 15px;
+          background-color: #87D37C;
+          display: inline-block;
+          width: 100%;
+          max-width: 340px;
+          border-radius: 5px;
+        }
+
+        input {
+          display: block;
+          margin-bottom: 10px;
+          padding: 5px;
+          width: 100%;
+          border: 1px solid lightgrey;
+          border-radius: 3px;
+          font-size: 16px;
+        }
+
+        input[type=submit] {
+          font-size: 16px;
+          border-radius: 3px;
+          background-color: #E4F1FE;
+          border: 1px solid grey;
+          box-shadow: 2px 2px #999;
+          cursor: pointer;
+        }
+
+        input[type=submit]:hover {
+          background-color: #FFFEC4;
+        }
+
+        code {
+          font-family: monospace;
+          font-size: 1.2em;
+          background-color: #FFFEC4;
+          padding: 2px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Exercise tracker</h1>
+        
+        <h2>Create a New User</h2>
+        <form id="new-user-form" method="post" action="/api/users">
+            <input type="text" name="username" placeholder="Username" required>
+            <input type="submit" value="Create User">
+        </form>
+
+        <h2>Add exercises</h2>
+        <form id="add-exercise-form" method="post" action="/api/users/:_id/exercises">
+            <input type="text" name="userId" placeholder="User ID" required>
+            <input type="text" name="description" placeholder="Description" required>
+            <input type="number" name="duration" placeholder="Duration (mins)" required>
+            <input type="date" name="date">
+            <input type="submit" value="Add Exercise">
+        </form>
+
+        <h2>GET user's exercise log:</h2>
+        <p><code>GET /api/users/:_id/logs?[from][&amp;to][&amp;limit]</code></p>
+        <p><strong>[ ]</strong> = optional</p>
+        <p><strong>from, to</strong> = dates (yyyy-mm-dd); <strong>limit</strong> = number</p>
+        <form id="get-log-form">
+            <input type="text" name="userId" placeholder="User ID" required>
+            <input type="date" name="from" placeholder="From (yyyy-mm-dd)">
+            <input type="date" name="to" placeholder="To (yyyy-mm-dd)">
+            <input type="number" name="limit" placeholder="Limit">
+            <input type="submit" value="Get Log">
+        </form>
+
+        <div id="result"></div>
+    </div>
+
+    <script>
+        document.getElementById('new-user-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const form = e.target;
+            const response = await fetch(form.action, {
+                method: form.method,
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: new URLSearchParams(new FormData(form))
+            });
+            const result = await response.json();
+            document.getElementById('result').textContent = JSON.stringify(result, null, 2);
+        });
+
+        document.getElementById('add-exercise-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const form = e.target;
+            const userId = form.elements.userId.value;
+            const formData = new FormData(form);
+            formData.delete('userId');
+            const response = await fetch(form.action.replace(':_id', userId), {
+                method: form.method,
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: new URLSearchParams(formData)
+            });
+            const result = await response.json();
+            document.getElementById('result').textContent = JSON.stringify(result, null, 2);
+        });
+
+        document.getElementById('get-log-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const form = e.target;
+            const userId = form.elements.userId.value;
+            const from = form.elements.from.value;
+            const to = form.elements.to.value;
+            const limit = form.elements.limit.value;
+            let url = `/api/users/${userId}/logs?`;
+            if (from) url += `from=${from}&`;
+            if (to) url += `to=${to}&`;
+            if (limit) url += `limit=${limit}`;
+            const response = await fetch(url);
+            const result = await response.json();
+            document.getElementById('result').textContent = JSON.stringify(result, null, 2);
+        });
+    </script>
+</body>
+</html>
