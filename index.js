@@ -8,7 +8,6 @@ const app = express();
 app.use(cors());
 const port = process.env.PORT || 3000;
 
-// Connect to MongoDB (replace with your actual connection string)
 mongoose.connect(process.env.MONGODB_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
